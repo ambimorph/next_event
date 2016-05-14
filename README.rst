@@ -10,7 +10,7 @@ where each event consists of
 * a timestamp of the event
 
 The result is a list of events with the same data as the orginal event,
-*and* the timestamp of the next event for the same key
+*and* the timestamp of the next event for the same key.
 
 There is a built-in timeout after which events are no longer "waiting" for another event.
 
