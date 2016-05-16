@@ -59,22 +59,3 @@ class circular_array_of_timestamps(object):
 
         return full_record
 
-
-
-
-"""
-New event:
-
-if key in bucket:
-* pop it (atomic fetch and delete)
-* merge and return it
-
-check timestamp
-if timestamp > current one for its modulus, this means the time window has passed
-* for each key in the bucket, remove it from the key to timestamp map
-* remove the bucket
-* make a new bucket and add key:data to it
-* update bucket_to_timestamp
-
-add key to timestamp map
-"""
