@@ -44,6 +44,11 @@ class circular_array_of_timestamps(object):
         if self.key_to_timestamp.has_key(key):
            return self.pop(key)
 
+    def generate_timed_out_events(self, timestamp):
+        bucket = self.get_bucket(timestamp)
+        for k, v in self.buckets[bucket].iteritems():
+            yield (k, v, self.bucket_to_timestamp[bucket], None)
+
     def process_record(self, key, data, timestamp):
 
         try:
@@ -53,9 +58,10 @@ class circular_array_of_timestamps(object):
             full_record = None
 
         if timestamp > self.bucket_to_timestamp[self.get_bucket(timestamp)]:
+            for e in self.generate_timed_out_events(timestamp):
+                yield e
             self.replace_bucket(timestamp)
 
         self.insert(key, data, timestamp)
 
-        return full_record
-
+        yield full_record

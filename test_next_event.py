@@ -13,6 +13,7 @@ class NextEventTest(unittest.TestCase):
             ("1", "new stuff", 32),
             ("0", "more data", 33),
             ("3", "something else", 33),
+            ("4", "and then", 34),
         ]
 
     def test_insert(self):
@@ -63,27 +64,39 @@ class NextEventTest(unittest.TestCase):
         self.assertDictEqual({}, self.ne.key_to_timestamp)
         self.assertDictEqual({}, self.ne.buckets[1])
 
+    def test_generate_timed_out_events(self):
+
+        self.ne.insert(*self.events[0])
+        self.ne.insert(*self.events[1])
+
+        l = list(self.ne.generate_timed_out_events(33))
+
+        self.assertEqual(2, len(l))
+        self.assertIn(("0", "a little data", 30, None), l)
+        self.assertIn(("1", "some stuff", 30, None), l)
+
     def test_process_record(self):
 
         full_records = []
         for e in self.events:
-            result = self.ne.process_record(*e)
-            if result is not None:
-                full_records.append(result)
+            results = list(self.ne.process_record(*e))
+            for r in results:
+                if r is not None:
+                    full_records.append(r)
 
         self.assertListEqual([("1", "some stuff", 30, 32),
-                              ("0", "a little data", 30, 33)], full_records)
+                              ("0", "a little data", 30, 33),
+                              ("2", "other", 31, None)], full_records)
         
-        self.assertDictEqual({"0":33, "1":32, "2":31, "3":33}, self.ne.key_to_timestamp)
+        self.assertDictEqual({"0":33, "1":32, "2":31, "3":33, "4":34},
+                             self.ne.key_to_timestamp)
         self.assertDictEqual({0:33,
-                              1:31,
+                              1:34,
                               2:32}, self.ne.bucket_to_timestamp)
         self.assertDictEqual({0:{"0":"more data", "3":"something else"},
-                              1: {"2":"other"},
+                              1: {"4":"and then"},
                               2: {"1":"new stuff"}},
                              self.ne.buckets)
         
-        
-
 if __name__ == '__main__':
     unittest.main()
